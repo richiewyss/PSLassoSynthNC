@@ -10,11 +10,13 @@ dat_gen <- function(n, ps, seed1, seed2){
   if(scenario == 1){### high-dimensional data
     nstudy<- n
     nvars<- 1000
+    
     ## defining alpha and beta coefficients
     nc<- 100
     ni<- 0
     nr<- 0
     ns<- nvars-(nc+ni+nr)
+    
     ## global parameters for sim (only want to set once so they are same for all sims)
     ## seed2 should remain same across simulation runs
     set.seed(seed2)
@@ -32,19 +34,22 @@ dat_gen <- function(n, ps, seed1, seed2){
     cprev<- runif(nvars, 0.01, 0.1)
     oprev<- 0.05
     tprev<- 0.30
+    
     ## resetting seed so that it is unique for each simulation
     ## seed1 should change each run to get new data
     set.seed(seed1)
+    
     # generate synthetic matrix of baseline covariates
     Xcovs<- matrix(NA, nrow=nstudy, ncol=nvars)
     for(pp in 1:nvars){
       Xcovs[,pp]<- rbinom(nstudy, 1, cprev[pp])
     }
     Xcovs<- as.data.frame(Xcovs)
-    names(Xcovs)<- c(paste0(’x’, 1:nvars))
+    names(Xcovs)<- c(paste0("x", 1:nvars))
     W<- as.matrix(Xcovs)
     linear_pred_e<- W %*% alpha
     linear_pred_y<- W %*% beta
+    
     ##function to find intercept to get specified treatment prevalence
     treatment_inc<- tprev
     fn <- function(c) mean(plogis(c + linear_pred_e)) - treatment_inc
@@ -53,6 +58,7 @@ dat_gen <- function(n, ps, seed1, seed2){
     e<- rbinom(nstudy, 1, Ee)
     A<- e
     p<- Ee
+    
     ##function to find intercept to get specified outcome incidence
     outcome_inc<- oprev
     fn <- function(c) mean(plogis(c + betaE*e + linear_pred_y )) - outcome_inc
@@ -74,6 +80,7 @@ dat_gen <- function(n, ps, seed1, seed2){
     x8 = rbinom(n,1,0.6)
     x9 = rbinom(n,1,0.6)
     x10 = rbinom(n,1,0.6)
+    
     ##function to find intercept to get specified treatment prevalence
     linear_pred_e = (1*x2^2-exp(x1/2)-x3+x4-exp(x5/2)+x6+x7)/2
     tprev<- 0.50

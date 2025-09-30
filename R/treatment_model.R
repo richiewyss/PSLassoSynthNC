@@ -52,31 +52,37 @@ treatment_model<- function(data,
                                maxit=maxit, #5000,
                                foldid = foldid,
                                keep=TRUE)
+  
   ## extracting predicted values & lambda starting and stopping values
   gns1<- NULL
   gns2<- NULL
   gns1<- predict(glmnet.e, newx = Wmat, s=glmnet.e$lambda, type = "response") ##predicted values for each lambda
   gns2<- plogis(glmnet.e$fit.preval[, 1:ncol(gns1)]) ## Cross Validated (out-of-fold) predicted values for each lambda
+  
   ## lambda value that optimizes CV prediction (minimizes CV prediction error)
   n.lambda.start<- which(glmnet.e$lambda == glmnet.e$lambda.min)
   lambda.start<- glmnet.e$lambda.min
+  
   ## only keeping lambda values that are less than or equal to lambda that optimizes CV prediction
   preds_under1<- gns1[,n.lambda.start:ncol(gns1)] ##same-sample predicted values
   preds_under2<- gns2[,n.lambda.start:ncol(gns2)] ##out-of-fold predicted values
   lambda_vector<- glmnet.e$lambda[n.lambda.start:length(glmnet.e$lambda)]
   lassocoef = glmnet.e$glmnet.fit$beta[,n.lambda.start:length(glmnet.e$lambda)]
   coef_mat<- lassocoef
+  
   ##number of selected variables for each lambda value
   n_selected_vars<- apply(lassocoef, 2, function(x){sum(x != 0)})
+  
   results<- list(preds_under1,
                  preds_under2,
                  coef_mat,
                  lambda_vector,
                  n_selected_vars)
-  names(results)<- c(’preds’,
-                      ’preds_cf’,
-                      ’coef_mat’,
-                      ’lambdas’,
-                      ’n_vars’)
+  
+  names(results)<- c("preds",
+                     "preds_cf",
+                     "coef_mat",
+                     "lambdas",
+                     "n_vars")
   return(results)
 }
