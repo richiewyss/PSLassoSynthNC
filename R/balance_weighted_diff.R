@@ -6,6 +6,7 @@
 ## balance_weighted_diff() calculates covariate balance for each covariate
 ##
 ##########################################################################################
+
 #Helper function used within weighted.diff
 #weighted.var function from Gavin Simpson. URL: https://stat.ethz.ch/pipermail/r-help/2008-July/168762.html
 weighted.var <- function(x, w, na.rm = FALSE) {
@@ -18,6 +19,7 @@ weighted.var <- function(x, w, na.rm = FALSE) {
   mean.w <- sum(x * w) / sum(w)
   (sum.w / (sum.w^2 - sum.w2)) * sum(w * (x - mean.w)^2, na.rm = na.rm)
 }
+
 #Helper function used within weighted.diff
 mw_fun<- function(score, treatment){
   score_data<- as.data.frame(cbind(score, (1-score)))
@@ -27,15 +29,81 @@ mw_fun<- function(score, treatment){
 }
 
 
-#’ Helper function used within ’balance_weighted_diff()’ to calculate weighted standardized differences
-#’
-#’ @param data a dataset or matrix containing baseline covariates
-#’ @param data0 a dataset or matrix containing baseline covariates for unexposed group
-#’ @param data1 a dataset or matrix containing baseline covariates for exposed group
-#’ @param score a dataset or matrix of fitted propensity score values (each column corresponds to different model)
-#’ @param treatment a vector of binary indicators indicating treatment status
-#’ @param method weighting method used to calculate weighted standardized differences
-#’ @param normalized boolean TRUE/FALSE to indicate use of normalized weights (default is TRUE)
+##########################################################################################
+##
+##    Balance Function: Calculates weighted standardized difference for each covariate 
+##
+##########################################################################################
+
+
+#' Helper function used within ’balance_weighted_diff()’ to calculate weighted standardized differences after PS adjustment
+#'
+#' @param data A dataset or matrix containing baseline covariates
+#' @param data0 A dataset or matrix containing baseline covariates for unexposed group
+#' @param data1 A dataset or matrix containing baseline covariates for exposed group
+#' @param score A dataset or matrix of fitted propensity score values (each column corresponds to predicted values from a different model) 
+#' @param treatment A vector of binary indicators indicating treatment status
+#' @param method weighting method used to calculate weighted standardized differences
+#' @param normalized boolean TRUE/FALSE to indicate use of normalized weights (default is TRUE)
+#' @returns A numeric vector containing the standardized differences for each covariate after PS adjustment.
+#' @details The weighted_diff() function is used within the balance_weighted_diff() function to calculate the adjusted standardized differences for each covariate. 
+#' @export
+#' @examples
+#' #load library
+#' library(PSLassoSynthNC)
+#' 
+#' #creating some simulated data for testing
+#' nstudy<- 2000
+#' nvars<- 500
+#' nc<- 100
+#' ns<- nvars-(nc)
+#' alpha_temp<- runif(nc, 0.0, 0.4)
+#' beta_temp<- runif(nc, 0.0, 0.4)
+#' random_neg<- sample(1:length(alpha_temp), 0.5*length(alpha_temp), replace=FALSE)
+#' alpha_temp[random_neg]<- -1*alpha_temp[random_neg]
+#' beta_temp[random_neg]<-  -1*beta_temp[random_neg]
+#' alpha<-  matrix(c(alpha_temp, rep(0, ns)), ncol=1)
+#' beta<-   matrix(c(beta_temp, rep(0, ns)), ncol=1)
+#' betaE<- 0
+#' cprev<- runif(nvars, 0, 0.3)
+#' cprev<- sample(cprev)
+#' oprev<- 0.05
+#' tprev<- 0.4
+#' Xcovs_sim<- matrix(rnorm((nstudy*nvars), 0, 1), nrow=nstudy, ncol=nvars)
+#' Xcovs_sim<- as.data.frame(Xcovs_sim)  
+#' names(Xcovs_sim)<- c(paste0('x', 1:nvars))
+#' W<- as.matrix(Xcovs_sim)
+#' colnames(W)<- c(paste0('x', 1:nvars))
+#' linear_pred_e<- W %*% alpha
+#' linear_pred_y<- W %*% beta
+#' treatment_inc<- tprev
+#' fn <- function(c) mean(plogis(c + linear_pred_e)) - treatment_inc
+#' alpha0 <- uniroot(fn, lower = -20, upper = 20)$root
+#' Ee <- (1 + exp( -(alpha0 + linear_pred_e) ))^-1
+#' e<- rbinom(nstudy, 1, Ee)
+#' outcome_inc<- oprev
+#' fn <- function(c) mean(plogis(c + betaE*e + linear_pred_y  )) - outcome_inc
+#' beta0 <- uniroot(fn, lower = -20, upper = 20)$root
+#' Ey <- (1 + exp( -( beta0 + betaE*e + linear_pred_y )))^-1
+#' y<- rbinom(nstudy, 1, Ey)
+#' simdat <- as.data.frame(cbind(y, e, Ee, Xcovs_sim))
+#'
+#' #creating folid vector for testing
+#' N <- length(e)
+#' V=10
+#' n<- 1:length(e)
+#' cvfolds<- stratifyCVFoldsByYandID(V=V, Y = e)
+#' folds <- cvfolds$validRows
+#' foldid <- cvfolds$fold_id
+#'
+#' #running treatment_model() function
+#' trt_out<- treatment_model(data=Xcovs_sim, treatment=e, foldid=foldid, alpha=1,lambda_ratio=.01, maxit=5000, nmodels=9)
+#' 
+#' #running weighted_diff function
+#' ps_dat_crossfit<- trt_out[[2]][,1]
+#' data0<- Xcovs_sim[e==0,]
+#' data1<- Xcovs_sim[e==1,]
+#' weighted_diff(data=Xcovs_sim, data0=data0, data1=data1, score=ps_dat_crossfit, treatment=e, method='ow', normalized=TRUE)
 weighted_diff<- function(data,
                          data0,
                          data1,

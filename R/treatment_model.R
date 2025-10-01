@@ -1,20 +1,16 @@
-##################################################################################
-##
-## treatment_model: function to to fit lasso model for many values of lambda
-##
-##################################################################################
-#’ Calls glmnet to fit propensity score models corresponding to different degrees of regularization
-#’
-#’ @param data a dataset or matrix containing baseline covariates
-#’ @param treatment a binary vector for treatment
-#’ @param foldid fold each subject belongs to
-#’ @param alpha the elasticnet tuning parameter defined in glmnet (default is 1 for Lasso)
-#’ @param lambda_ratio the ratio from the largest to smallest lambda to consider (constrains the range of lambda values)
-#’ @param nlambda the number of lambda tuning parameters to consider when fitting glmnet
-#’ @param maxit maximum number of iterations as defined in glmnet
-#’ @param nmodels the number of undersmoothed models to return PS values for
-#’ @param penalty optional vector to specify different penalties for variables like in adaptive lasso (default is NULL)
-#’ @param par optional TRUE/FALSE to implement parallel computing (default is FALSE)
+
+#' Calls glmnet to fit propensity score models corresponding to different degrees of regularization
+#'
+#' @param data a dataset or matrix containing baseline covariates
+#' @param treatment a binary vector for treatment
+#' @param foldid fold each subject belongs to
+#' @param alpha the elasticnet tuning parameter defined in glmnet (default is 1 for Lasso)
+#' @param lambda_ratio the ratio from the largest to smallest lambda to consider (constrains the range of lambda values)
+#' @param nlambda the number of lambda tuning parameters to consider when fitting glmnet
+#' @param maxit maximum number of iterations as defined in glmnet
+#' @param nmodels the number of undersmoothed models to return PS values for
+#' @param penalty optional vector to specify different penalties for variables like in adaptive lasso (default is NULL)
+#' @param par optional TRUE/FALSE to implement parallel computing (default is FALSE)
 #'
 #' @returns A list containing: 1) same-sample predicted values from the selected lasso model; 2) out-of-fold predicted values from the selected lasso; 3) coefficient matrix for all fitted lasso models; 4) lambda values for all fitted lasso models; 5) number of selected variables from each fitted lasso model.
 #' @details The treatment_model() function fits LASSO propensity score models for causal inference in high-dimensional data. The function calls glmnet to fit several Lasso models with different lambda tuning parameters (using default sequence in glmnet).
@@ -27,7 +23,7 @@
 #' @export
 #' @examples
 #' #loading package
-#' library(ci5)
+#' library(PSLassoSynthNC)
 #' 
 #' #creating some simulated data for testing
 #' nstudy<- 2000

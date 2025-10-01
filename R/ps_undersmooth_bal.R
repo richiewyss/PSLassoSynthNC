@@ -1,16 +1,11 @@
-##################################################################################################
-##
-## ps_undersmooth_bal: function to choose lambda value based on minimizing balance criteria
-##
-##################################################################################################
 
-#’ Undersmoothing Lasso PS Models using balance diagnostics
-#’
-#’ @param data a dataset or matrix containing baseline covariates
-#’ @param treatment a binary vector for treatment
-#’ @param ps_dat a matrix of fitted propensity scores
-#’ @param normalized a boolean TRUE/FALSE to use normalized weighting
-#’ @param standardize a boolean TRUE/FALSE to use standardized differences
+#' Undersmoothing Lasso PS Models using balance diagnostics
+#'
+#' @param data a dataset or matrix containing baseline covariates
+#' @param treatment a binary vector for treatment
+#' @param ps_dat a matrix of fitted propensity scores
+#' @param normalized a boolean TRUE/FALSE to use normalized weighting
+#' @param standardize a boolean TRUE/FALSE to use standardized differences
 #'
 #' @returns A list containing: 1) predicted values from the selected lasso model; 2) a vector with the value for the smallest average standardized difference among all models after PS weighting and the value of the maximum standardized difference among all models after PS weighting; 3) the index (column) of the selected model/predicted values for each balance criteria.
 #' @details The ps_undersmooth_bal() function takes as input predicted values from several propensity score models. The function calculates the weighted standardized difference for each variable and returns the index (column) for the models where 1) the average standardized difference is the smallest, and 2) the maximum weighted standardized difference is the smallest. 
