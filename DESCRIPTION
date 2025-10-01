@@ -1,11 +1,10 @@
 Package: PSLassoSynthNC
-Title: What the Package Does (One Line, Title Case)
+Title: Undersmoothed Lasso Models for Propensity Score Weighting and Synthetic Negative Control Exposures for Bias Detection
 Version: 0.0.0.9000
 Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"))
-Description: What the package does (one paragraph).
-License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
-    license
+    person("Richard", "Wyss", , "first.last@example.com", role = c("aut", "cre"))
+Description: This package allows users to fit Lasso propensity score models that use either cross-validation or balance criteria to select the regularization (lambda) tuning parameter. Balance criteria are dependent on a selected propensity score weighting approach and will tend to undersmooth the fitted Lasso model, which can improve confounding control. Because no tuning criteria is universally best, the package further provides code for generating synthetic negative control exposures for bias detection. 
+License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
