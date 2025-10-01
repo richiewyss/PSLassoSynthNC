@@ -1,9 +1,11 @@
 ###################################################################################################
 ##
-## Function to fit HAL to generate matrix of indicator basis functions (used for Scenario 2)
+## Function to fit HAL to generate matrix of indicator basis functions (used for Scenario 2) 
+##      see hal9001 package in R for details
 ##
 ###################################################################################################
-# see hal9001 package in R for details
+
+#' @export
 hal_model<- function(X, Y, max_degree, num_knots, nfolds, foldid){
   # fitting HAL
   mod_full<- fit_hal(X=X,
