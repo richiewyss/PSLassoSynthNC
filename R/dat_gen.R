@@ -1,12 +1,15 @@
-#############################################
-##
-## dat_gen: function to generate data
-##
-#############################################
+#' Function to generate data in Wyss et al 2025
+#'
+#' @param n the number of observatoins to generate (size of data)
+#' @param scenario a value of either 1 or 2. scenario=1 is the high-dimensional setting in Wyss et al 2025; scenario=2, observational study with 10 covariates in Ertefaie et al 2023 
+#' @param seed1 seed for simulating random data
+#' @param seed2 seed for setting global parameters for scenario 1
 
-### scenario = 1, high-dimensional setting
-### scenario = 2, observational study with 10 covariates for HAL implenetation (Ertefaie et al. 2023)
-dat_gen <- function(n, ps, seed1, seed2){
+#'
+#' @returns A dataframe of simulated data.
+#' @details Function to generate data used in Wyss et al. 2025
+#' @export
+dat_gen <- function(n, scenario, seed1, seed2){
   if(scenario == 1){### high-dimensional data
     nstudy<- n
     nvars<- 1000
