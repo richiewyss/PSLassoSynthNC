@@ -9,32 +9,24 @@
 
 # Background
 
-This package fits undersmoothed LASSO models for propensity score
-weighting. When fitting Lasso propensity score models, both theory and
-simulations have shown that undersmoothing the Lasso model is beneficial
-for reducint bias in estimated treatment effects. However, determining
-the degree of undersmoothing can be challenging. Too much undersmoothing
-can cause severe overfitting resulting in poorly fit PS models. However,
-too little undersmoothing will result in fitted propensity score models
-that exclude important confounder information.
-
-This package uses balance diagnostics for undersmoothing
-high-dimensional Lasso propensity score models. The package provides
-diagnostics for evaluating model performance. In addition to balance and
-prediciton diagnostics, we propose using synthetically generated
-negative control exposures for bias detection. The package provides a
-function to automate the process of synthetic negative control exposure
-generation.
-
-Options for propensity score weighting include 1) inverse probability
-weighting; 2) overlap weighting; and 3) matching weights.
+When fitting Lasso models for propensity score weighting, both theory
+and simulations have shown that undersmoothing the Lasso model is
+beneficial for reducing bias in estimated treatment effects. However,
+determining the degree of undersmoothing can be challenging. Proper
+undersmoothing can reduce bias in estimated effects, but excessive
+undersmoothing can increase the risk of bias caused by severe
+overfitting. This package uses balance diagnostics to determine the
+degree of undresmoothing when fitting Lasso models for propensity score
+weighting. Because balance diagnostics by themselves are not guaranteed
+to minimize bias in causal effect estimates (as such metrics are
+outcome-blind) this package further uses synthetic negative control
+exposures for bias detection.
 
 This package is based on work in the following paper:
 
-- Wyss R, Hansen BB, Hahn G, van der Laan L, Lin KJ.
-  Collaborative-controlled LASSO for constructing propensity score-based
-  estimators in high-dimensional data. *arXiv:2506.17760\[stat.ME\]*.
-  2025.
+- Wyss R, Hansen BB, Hahn G, van der Laan L, Lin KJ. Undersmoothed LASSO
+  models for propensity score weighting and synthetic negative control
+  exposures for bias detection. *arXiv:2506.17760\[stat.ME\]*. 2025.
 
 Additional references on undersmoothing propensity score models are
 provided in the following:
@@ -54,62 +46,50 @@ provided in the following:
 
 # Description
 
-The function **main_fun()** runs the full analytic pipeline from PS
-estimation, PS model selection/undersmoothing, treatment effect
-estimation, and diagnostic assessment.
+This package provides functions to fit undersmoothed Lasso models for
+propensity score weighting. The degree of undersmoothing is determined
+by balance criteria applied to the propensity score weighted cohorts.
 
-Within *main_fun()*, there are several helper functions that are called.
-Each of these functions can be called outside of *main_fun()* to give
-users flexibility to use specific procedures outside of *main_fun()*.
-For example, if users are interested in fitting undersmoothed lasso PS
-models, but want to apply the fitted propensity scores in a causal
-inference framework that is not provided by *main_fun()*, users can call
-the functions outside of *main_fun()* to run selected parts of the
-analytic pipeline.
+Options for propensity score weighting include 1) inverse probability
+weighting; 2) overlap weighting; and 3) matching weights.
 
-The list of helper functions within *main_fun()* are described below.
+Balance metrics for evaluating covariate balance include 1) the average
+standardized absolute mean difference (ASAMD) and 2) the minimum of the
+largest standardized differences across all covariates.
 
-# Helper functions called by **main_fun()**
+The package provides diagnostics for evaluating model performance. In
+addition to balance and prediction diagnostics, we propose using
+synthetically generated negative control exposures for bias detection.
+The package provides a function to automate the process of synthetic
+negative control exposure generation.
+
+A description of each function in the package is provided below.
+
+# Description of functions
 
 - **treatment_model()**:
   - calls glmnet to fit several Lasso models for treatment assignment
     with varying degrees of undersmoothing and returns a dataframe of
     propensity score values for each fitted lasso model.
-- **outcome_model()**:
-  - calls glmnet to fit an outcome lasso model that is tuned using
-    cross-validation and returns a vector of the predicted values along
-    with variables selected by the model to be used when running the
-    outcome adaptive lasso for propensity score estimation.  
-- **ps_dist_plot()**:
-  - plots propensity score distributions for all fitted lasso propensity
-    score models across treatment groups and calculates c-statistics.
 - **balance_weighted_diff()**:
   - calculates weighted standardized differences across treatment groups
     (called by *cov_diff_plot()*).
 - **cov_diff_plot()**:
   - plots standardized differences across treatment groups for all of
     the fitted lasso PS models after PS weighting or PS matching.
-- **ps_undersmooth()**:
+- **ps_undersmooth_bal()**:
   - takes as input a matrix of fitted PS values and selects the degree
     of undersmoothing using selected criteria.
   - Options include:
-    - collaborative learning
-    - score equation
-    - balance minimization
+    - balance minimization using inverse probaiblity weights (IPW)
+    - balance minimization using matching weights (MW)
+    - balance minimization using overlap weights (OW)
 - **ps_weighting()**:
   - Uses PS weighting to estimate the treatment effect
   - Options include:
     - inverse probability weights (target population ATE)
-    - standardized mortality ratio weighting (target population ATT)
     - overlap weights (depends on overlap in estimated PS)
     - matching weights (depends on overlap in estimated PS)
-- **matchit()**:
-  - calls the *matchit()* function within the *MatchIt* package for PS
-    matching.
-- **tmle()**:
-  - calls the *tmle()* function within the *TMLE* package when using
-    targeted minimum loss-based estimation for estimating treatment
-    effects.
 
 ## Installation
 
@@ -123,9 +103,16 @@ pak::pak("richiewyss/PSLassoSynthNC")
 
 ## Example
 
-This is a basic example for running **main()**. Examples for running
-each of the helper functions listed above are provided in separate
-vignettes.
+Below, we provide an example running the full analytic pipeline from PS
+estimation, PS model selection/undersmoothing, treatment effect
+estimation, and diagnostic assessment for one simulation run.
+
+Below, we provide an example for running the full analytic pipeline from
+PS estimation, PS model selection/undersmoothing, treatment effect
+estimation, and diagnostic assessment for one simulation run.
+
+Examples for running each of the helper functions listed above are
+provided in separate vignettes.
 
 ``` r
 library(PSLassoSynthNC)
