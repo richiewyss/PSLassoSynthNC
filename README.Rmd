@@ -46,16 +46,16 @@ Balance metrics for evaluating covariate balance include 1) the average standard
 
 The package provides diagnostics for evaluating model performance. In addition to balance and prediction diagnostics, we propose using synthetically generated negative control exposures for bias detection. The package provides a function to automate the process of synthetic negative control exposure generation.  
 
-A description of each function in the package is provided below.
+# Overview of functions 
 
-# Description of functions 
+A brief description of each function in the package is provided below. A more detailed description for each function listed below is provided in separate vignettes.
 
 * __treatment_model()__: 
-  + calls glmnet to fit several Lasso models for treatment assignment with varying degrees of undersmoothing and returns a dataframe of propensity score values for each fitted lasso model. 
+  + calls glmnet to fit several Lasso models for treatment assignment with varying degrees of undersmoothing and returns a dataframe of the out-of-fold predictions for each fitted lasso model. 
 * __balance_weighted_diff()__: 
   + calculates weighted standardized differences across treatment groups (called by *cov_diff_plot()*).
 * __cov_diff_plot()__: 
-  + plots standardized differences across treatment groups for all of the fitted lasso PS models after PS weighting or PS matching. 
+  + plots standardized differences across treatment groups for all of the fitted lasso PS models after PS weighting 
 * __ps_undersmooth_bal()__: 
   + takes as input a matrix of fitted PS values and selects the degree of undersmoothing using selected criteria.
   + Options include:
@@ -81,11 +81,9 @@ pak::pak("richiewyss/PSLassoSynthNC")
 
 ## Example
 
-Below, we provide an example running the full analytic pipeline from PS estimation, PS model selection/undersmoothing, treatment effect estimation, and diagnostic assessment for one simulation run.
-
 Below, we provide an example for running the full analytic pipeline from PS estimation, PS model selection/undersmoothing, treatment effect estimation, and diagnostic assessment for one simulation run.
 
-Examples for running each of the helper functions listed above are provided in separate vignettes.
+Note: The code below is just for one simulation run. The code needs to be run in \'for\' loop (for i in 1:nsim) to get multiple simulation runs. Could also use parallel processing for multiple runs with minor edits. 
 
 ``` r
 library(PSLassoSynthNC)
@@ -93,60 +91,83 @@ library(devtools)
 devtools::load_all()
 ```
 
-## Simulate some example data 
+## Generate data
 
-```{r example}
-nstudy<- 2000
-nvars<- 500
+```{r, example} 
+library(PSLassoSynthNC)
+library(hal9001)
+library(Matrix)
+library(glmnet)
+library(dplyr)
 
-nc<- 100
-ns<- nvars-(nc)
+scenario<- 1
+seed1<- 100       ## seed for simulating random data (when running in loop, should be different for each run)
+seed2<- 110101    ## seed for setting global parameters for scenario 1 (should stay the same across runs)
 
-alpha_temp<- runif(nc, 0.0, 0.4)
-beta_temp<- runif(nc, 0.0, 0.4)
-
-random_neg<- sample(1:length(alpha_temp), 0.5*length(alpha_temp), replace=FALSE)
-alpha_temp[random_neg]<- -1*alpha_temp[random_neg]
-beta_temp[random_neg]<-  -1*beta_temp[random_neg]
-
-alpha<-  matrix(c(alpha_temp, rep(0, ns)), ncol=1)
-beta<-   matrix(c(beta_temp, rep(0, ns)), ncol=1)
-
-betaE<- 0
-
-cprev<- runif(nvars, 0, 0.3)
-cprev<- sample(cprev)
-oprev<- 0.05
-tprev<- 0.4
-    
-Xcovs_sim<- matrix(rnorm((nstudy*nvars), 0, 1), nrow=nstudy, ncol=nvars)
-Xcovs_sim<- as.data.frame(Xcovs_sim)  
-names(Xcovs_sim)<- c(paste0('x', 1:nvars))
-      
-W<- as.matrix(Xcovs_sim)
-colnames(W)<- c(paste0('x', 1:nvars))
-
-linear_pred_e<- W %*% alpha
-linear_pred_y<- W %*% beta
-      
-treatment_inc<- tprev
-fn <- function(c) mean(plogis(c + linear_pred_e)) - treatment_inc
-alpha0 <- uniroot(fn, lower = -20, upper = 20)$root
-Ee <- (1 + exp( -(alpha0 + linear_pred_e) ))^-1
-e<- rbinom(nstudy, 1, Ee)
-      
-outcome_inc<- oprev
-fn <- function(c) mean(plogis(c + betaE*e + linear_pred_y  )) - outcome_inc
-beta0 <- uniroot(fn, lower = -20, upper = 20)$root
-Ey <- (1 + exp( -( beta0 + betaE*e + linear_pred_y )))^-1
-y<- rbinom(nstudy, 1, Ey)
-
-simdat<- NULL
-simdat <- as.data.frame(cbind(y, e, Ee, Xcovs_sim))
-
+dat<- dat_gen(n=5000, scenario=scenario, seed1=seed1, seed2=seed2)
 ```
 
-## Running __main_fun()__
+## Running helper function to assign folds for cross-validation
+
+``` r
+nfolds = 10  
+cvfolds <- stratifyCVFoldsByYandID(V=nfolds, Y = dat$A)
+folds <- cvfolds$validRows
+foldid <- cvfolds$fold_id
+```
+
+## Getting baseline covariates (for Scenario 2, requires fitting HAL on full data to extract design matrix)
+
+``` r
+x_names<- names(dat)[which(substr(names(dat), 1, 1)=='x')]
+X_dat<- dat[,names(dat) %in% x_names]
+
+if(scenario == 1){ x_basis_full<- X_dat }
+if(scenario == 2){ x_basis_full<- hal_model(X=X_dat, Y=dat$A, max_degree=2, nfolds=NULL, foldid=foldid, num_knots=c(100, 25)) } 
+
+## Reducing dimension of basis matrix (cleaning based on prevalence)
+temp1<- apply(x_basis_full, 2, mean)
+temp2<- (temp1 >= .01 & temp1 <= .99)
+      
+x_basis_full<- x_basis_full[,temp2]
+
+## using treatment_model() function to fit glmnet on x_basis from above and extract predicted values for multiple lambda values
+
+lasso_object<- treatment_model(data=x_basis_full, 
+                               treatment=dat$A,
+                               foldid=foldid,
+                               alpha=1,
+                               lambda_ratio=0.01, #ifelse(nrow(x_basis_full) < ncol(x_basis_full), 0.01, 1e-04)
+                               nlambda=200,
+                               nmodels=NULL,
+                               maxit=5000,
+                               penalty=NULL,
+                               par=FALSE)
+
+preds<- NULL
+preds_cv<- NULL
+preds_all<- NULL
+coef_mat<- NULL
+lambdas<- NULL
+nvars<- NULL
+      
+preds<- lasso_object[[1]]       #same-sample predictions
+preds_cv<- lasso_object[[2]]    #cross-validated (out-of-fold) predictions
+coef_mat<- lasso_object[[3]]    #coefficient matrix (coefficients for each lambda)
+lambdas<- lasso_object[[4]]     #lambda values
+nvars<- lasso_object[[5]]       #number of variables selected by each lambda
+
+##index values for subset of predictions and lambdas (select a range to reduce computation time instead of selecting all values)
+
+steps<- NULL
+steps<- floor(quantile(1:ncol(preds), seq(0, 1, .02))) 
+    
+preds_all<- preds_cv[,steps]
+coef_mat<- coef_mat[,steps]
+lambdas<- lambdas[steps]
+nvars<- nvars[steps]
+```
+
 
 The function __main_fun()__ takes as input:
 
