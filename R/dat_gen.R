@@ -97,6 +97,6 @@ dat_gen <- function(n, scenario, seed1, seed2){
     Y0 = +0*0 +(-2*x2^2+2*x1+2*mean(x2^2)+x2+x1*x2+x3+x4+2*x5^2-2*mean(x5^2))/1 + Y_error
     Y = A*Y1 + (1-A)*Y0
   }
-  if(ps == 1) {return(data.frame(Y, Y1, Y0, A, p, Xcovs))}
-  if(ps == 2) {return(data.frame(Y, Y1, Y0, A, p, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10))}
+  if(scenario == 1) {return(data.frame(Y, Y1, Y0, A, p, Xcovs))}
+  if(scenario == 2) {return(data.frame(Y, Y1, Y0, A, p, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10))}
 }
