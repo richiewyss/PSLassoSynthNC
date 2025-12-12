@@ -20,7 +20,7 @@ knitr::opts_chunk$set(
 
 # Background
 
-When fitting Lasso models for propensity score weighting, both theory and simulations have shown that undersmoothing the Lasso model is beneficial for reducing bias in estimated treatment effects. However, determining the degree of undersmoothing can be challenging. Proper undersmoothing can reduce bias in estimated effects, but excessive undersmoothing can increase the risk of bias caused by severe overfitting. This package uses balance diagnostics to determine the degree of undresmoothing when fitting Lasso models for propensity score weighting. Because balance diagnostics by themselves are not guaranteed to minimize bias in causal effect estimates (as such metrics are outcome-blind) this package further uses synthetic negative control exposures for bias detection. 
+When fitting Lasso models for propensity score weighting, both theory and simulations have shown that undersmoothing the Lasso model is beneficial for reducing bias in estimated treatment effects. However, determining the degree of undersmoothing can be challenging. Proper undersmoothing can reduce bias in estimated effects, but excessive undersmoothing can increase the risk of bias caused by severe overfitting. This package uses balance diagnostics to determine the degree of undresmoothing when fitting Lasso models for propensity score weighting. However, tuning Lasso models using balance metrics are not guaranteed to minimize bias in PS weighted estimators since such metrics are outcome blind. Therefore, this package further provides functions to generate synthetic negative control exposures for bias detection. 
 
 This package is based on work in the following paper:
 
@@ -38,13 +38,18 @@ Additional references on undersmoothing propensity score models are provided in 
 
 # Description
 
-This package provides functions to fit undersmoothed Lasso models for propensity score weighting. The degree of undersmoothing is determined by balance criteria applied to the propensity score weighted cohorts. 
+This package provides functions to fit undersmoothed Lasso models for propensity score weighting. The degree of undersmoothing is determined by balance criteria applied to the propensity score weighted cohorts. Balance critera for evaluating covariate balance include 
 
-Options for propensity score weighting include 1) inverse probability weighting; 2) overlap weighting; and 3) matching weights.
+1) the average standardized absolute mean difference (ASAMD) 
+2) the minimum of the largest standardized differences across all covariates.  
 
-Balance metrics for evaluating covariate balance include 1) the average standardized absolute mean difference (ASAMD) and 2) the minimum of the largest standardized differences across all covariates.  
+Options for propensity score weighting include 
 
-The package provides diagnostics for evaluating model performance. In addition to balance and prediction diagnostics, we propose using synthetically generated negative control exposures for bias detection. The package provides a function to automate the process of synthetic negative control exposure generation.  
+1) inverse probability weighting 
+2) overlap weighting 
+3) matching weights
+
+The package further provides diagnostics for evaluating model performance. In addition to balance and prediction diagnostics, we propose using synthetically generated negative control exposures for bias detection. The package provides a function for the process of generating synthetic negative control cohorts.  
 
 # Overview of functions 
 
@@ -57,17 +62,7 @@ A brief description of each function in the package is provided below. A more de
 * __cov_diff_plot()__: 
   + plots standardized differences across treatment groups for all of the fitted lasso PS models after PS weighting 
 * __ps_undersmooth_bal()__: 
-  + takes as input a matrix of fitted PS values and selects the degree of undersmoothing using selected criteria.
-  + Options include:
-    + balance minimization using inverse probaiblity weights (IPW) 
-    + balance minimization using matching weights (MW)
-    + balance minimization using overlap weights (OW)
-* __ps_weighting()__:
-  + Uses PS weighting to estimate the treatment effect
-  + Options include:
-    + inverse probability weights (target population ATE)
-    + overlap weights (depends on overlap in estimated PS)
-    + matching weights (depends on overlap in estimated PS)
+  + takes as input a matrix of fitted PS values and selects the degree of undersmoothing using selected balance criteria.
 
 
 ## Installation
@@ -81,9 +76,9 @@ pak::pak("richiewyss/PSLassoSynthNC")
 
 ## Example
 
-Below, we provide an example for running the full analytic pipeline from PS estimation, PS model selection/undersmoothing, treatment effect estimation, and diagnostic assessment for one simulation run.
+Below, we provide an example for running the full analytic pipeline from PS estimation, PS model selection/undersmoothing, treatment effect estimation, and diagnostic assessment for one simulation run. This pipeline was used in the publication by Wyss et al. (2025). 
 
-Note: The code below is just for one simulation run. The code needs to be run in \'for\' loop (for i in 1:nsim) to get multiple simulation runs. Could also use parallel processing for multiple runs with minor edits. 
+Note: The code below is just for one simulation run. When running a simulation study (as in Wyss et al. (2025), the code needs to be run in a \'for\' loop (for i in 1:nsim) to get multiple simulation runs. To reduce computation time for simulation studies, each simluation run could be run in parallel with minor edits (e.g., using a parallel processing package). 
 
 ``` r
 library(PSLassoSynthNC)
@@ -93,8 +88,7 @@ devtools::load_all()
 
 ## Generate data
 
-```{r, example} 
-library(PSLassoSynthNC)
+```r 
 library(hal9001)
 library(Matrix)
 library(glmnet)

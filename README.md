@@ -17,10 +17,10 @@ undersmoothing can reduce bias in estimated effects, but excessive
 undersmoothing can increase the risk of bias caused by severe
 overfitting. This package uses balance diagnostics to determine the
 degree of undresmoothing when fitting Lasso models for propensity score
-weighting. Because balance diagnostics by themselves are not guaranteed
-to minimize bias in causal effect estimates (as such metrics are
-outcome-blind) this package further uses synthetic negative control
-exposures for bias detection.
+weighting. However, tuning Lasso models using balance metrics are not
+guaranteed to minimize bias in PS weighted estimators since such metrics
+are outcome blind. Therefore, this package further provides functions to
+generate synthetic negative control exposures for bias detection.
 
 This package is based on work in the following paper:
 
@@ -49,19 +49,23 @@ provided in the following:
 This package provides functions to fit undersmoothed Lasso models for
 propensity score weighting. The degree of undersmoothing is determined
 by balance criteria applied to the propensity score weighted cohorts.
+Balance critera for evaluating covariate balance include
 
-Options for propensity score weighting include 1) inverse probability
-weighting; 2) overlap weighting; and 3) matching weights.
+1)  the average standardized absolute mean difference (ASAMD)
+2)  the minimum of the largest standardized differences across all
+    covariates.
 
-Balance metrics for evaluating covariate balance include 1) the average
-standardized absolute mean difference (ASAMD) and 2) the minimum of the
-largest standardized differences across all covariates.
+Options for propensity score weighting include
 
-The package provides diagnostics for evaluating model performance. In
-addition to balance and prediction diagnostics, we propose using
-synthetically generated negative control exposures for bias detection.
-The package provides a function to automate the process of synthetic
-negative control exposure generation.
+1)  inverse probability weighting
+2)  overlap weighting
+3)  matching weights
+
+The package further provides diagnostics for evaluating model
+performance. In addition to balance and prediction diagnostics, we
+propose using synthetically generated negative control exposures for
+bias detection. The package provides a function for the process of
+generating synthetic negative control cohorts.
 
 # Overview of functions
 
@@ -81,17 +85,7 @@ separate vignettes.
     the fitted lasso PS models after PS weighting
 - **ps_undersmooth_bal()**:
   - takes as input a matrix of fitted PS values and selects the degree
-    of undersmoothing using selected criteria.
-  - Options include:
-    - balance minimization using inverse probaiblity weights (IPW)
-    - balance minimization using matching weights (MW)
-    - balance minimization using overlap weights (OW)
-- **ps_weighting()**:
-  - Uses PS weighting to estimate the treatment effect
-  - Options include:
-    - inverse probability weights (target population ATE)
-    - overlap weights (depends on overlap in estimated PS)
-    - matching weights (depends on overlap in estimated PS)
+    of undersmoothing using selected balance criteria.
 
 ## Installation
 
@@ -107,11 +101,15 @@ pak::pak("richiewyss/PSLassoSynthNC")
 
 Below, we provide an example for running the full analytic pipeline from
 PS estimation, PS model selection/undersmoothing, treatment effect
-estimation, and diagnostic assessment for one simulation run.
+estimation, and diagnostic assessment for one simulation run. This
+pipeline was used in the publication by Wyss et al. (2025).
 
-Note: The code below is just for one simulation run. The code needs to
-be run in 'for' loop (for i in 1:nsim) to get multiple simulation runs.
-Could also use parallel processing for multiple runs with minor edits.
+Note: The code below is just for one simulation run. When running a
+simulation study (as in Wyss et al. (2025), the code needs to be run in
+a 'for' loop (for i in 1:nsim) to get multiple simulation runs. To
+reduce computation time for simulation studies, each simluation run
+could be run in parallel with minor edits (e.g., using a parallel
+processing package).
 
 ``` r
 library(PSLassoSynthNC)
@@ -122,26 +120,10 @@ devtools::load_all()
 ## Generate data
 
 ``` r
-library(PSLassoSynthNC)
 library(hal9001)
-#> Warning: package 'hal9001' was built under R version 4.2.3
-#> Loading required package: Rcpp
-#> hal9001 v0.4.6: The Scalable Highly Adaptive Lasso
-#> note: fit_hal defaults have changed. See ?fit_hal for details
 library(Matrix)
 library(glmnet)
-#> Warning: package 'glmnet' was built under R version 4.2.3
-#> Loaded glmnet 4.1-8
 library(dplyr)
-#> Warning: package 'dplyr' was built under R version 4.2.3
-#> 
-#> Attaching package: 'dplyr'
-#> The following objects are masked from 'package:stats':
-#> 
-#>     filter, lag
-#> The following objects are masked from 'package:base':
-#> 
-#>     intersect, setdiff, setequal, union
 
 scenario<- 1
 seed1<- 100       ## seed for simulating random data (when running in loop, should be different for each run)
