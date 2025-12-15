@@ -115,7 +115,7 @@ reduce computation time for simulation studies, each simluation run
 could be run in parallel with minor edits (e.g., using a parallel
 processing package).
 
-#### R Code for Running One Simulation Run
+### R Code for Running Analysis on One Generated Cohort (one simulation run)
 
 ``` r
 library(PSLassoSynthNC)
@@ -331,7 +331,7 @@ est_mw_all[bal_max_counts2]
 est_ow_all[bal_max_counts3]
 ```
 
-#### Generating Synthetic Negative Control Exposures and Running Analysis on Synthetic Cohorts
+### Generating Synthetic Negative Control Exposures and Running Analysis on Synthetic Cohorts
 
 ``` r
 

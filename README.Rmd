@@ -80,7 +80,7 @@ Below, we provide an example for running the full analytic pipeline from PS esti
 
 Note: The code below is just for one simulation run. When running a simulation study (as in Wyss et al. (2025), the code needs to be run in a \'for\' loop (for i in 1:nsim) to get multiple simulation runs. To reduce computation time for simulation studies, each simluation run could be run in parallel with minor edits (e.g., using a parallel processing package). 
 
-#### R Code for Running One Simulation Run
+### R Code for Running Analysis on One Generated Cohort (one simulation run)
 ``` r
 library(PSLassoSynthNC)
 library(devtools)
@@ -296,7 +296,7 @@ est_ow_all[bal_max_counts3]
 
 ```
 
-#### Generating Synthetic Negative Control Exposures and Running Analysis on Synthetic Cohorts
+### Generating Synthetic Negative Control Exposures and Running Analysis on Synthetic Cohorts
 
 ``` r
 
