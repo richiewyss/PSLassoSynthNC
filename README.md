@@ -71,25 +71,47 @@ propose using synthetically generated negative control exposures for
 bias detection. The package provides a function for the process of
 generating synthetic negative control cohorts.
 
-## Overview of functions
+## Overview of Files in R Folder
 
-A brief description of each function in the package is provided below. A
-more detailed description for each function listed below is provided in
-separate vignettes.
+A brief description of each R file in the package is provided below. A
+more detailed description for each function (including a description of
+input parameters) is provided in separate vignettes.
 
-- **treatment_model()**:
-  - calls glmnet to fit several Lasso models for treatment assignment
-    with varying degrees of undersmoothing and returns a dataframe of
-    the out-of-fold predictions for each fitted lasso model.
-- **balance_weighted_diff()**:
-  - calculates weighted standardized differences across treatment groups
-    (called by *cov_diff_plot()*).
-- **cov_diff_plot()**:
-  - plots standardized differences across treatment groups for all of
-    the fitted lasso PS models after PS weighting
-- **ps_undersmooth_bal()**:
-  - takes as input a matrix of fitted PS values and selects the degree
-    of undersmoothing using selected balance criteria.
+- **treatment_model.R**:
+  - contains a function called *treatment_model()* that calls glmnet to
+    fit several Lasso models for treatment assignment with varying
+    degrees of undersmoothing and returns a dataframe of the out-of-fold
+    predictions for each fitted lasso model.
+- **balance_weighted_diff.R**:
+  - contains a function called *balance_weighted_diff()* that calculates
+    weighted standardized differences across treatment groups (called by
+    models after PS weighting
+- **ps_undersmooth_bal.R**:
+  - contains a function called *ps_undersmooth_bal()* that takes as
+    input a matrix of fitted PS values and selects the degree of
+    undersmoothing using selected balance criteria.
+- **utils.R**:
+  - contains helper functions that are used within the simulation code.
+    Helper functions include functions to calculate prediction
+    diagonstics (auc and negative log-likelihood) along with a function
+    to create rando folds for cross-validation that can be stratified
+    evenly across a variable (e.g., exposure).
+- **dat_gen.R**:
+  - contains a helper function to generate data used for the simulation
+    study in the paper by Wyss et al. (2025).
+- **hal_model.R**:
+  - simply calls the HAL function from the package hal9001 to generate
+    the design matrix representing the expanded set of binary indicator
+    functions of the covariates.
+  - Coyle J, Hejazi N, Phillips R, van der Laan L, van der Laan M
+    (2025). *hal9001: The scalable highly adaptive lasso*.
+    <doi:10.5281/zenodo.3558313>
+    <https://doi.org/10.5281/zenodo.3558313>, R package version 0.4.6,
+    <https://github.com/tlverse/hal9001>.
+  - Hejazi N, Coyle J, van der Laan M (2020). “hal9001: Scalable highly
+    adaptive lasso regression in R.” *Journal of Open Source Software*.
+    <doi:10.21105/joss.02526> <https://doi.org/10.21105/joss.02526>,
+    <https://doi.org/10.21105/joss.02526>.
 
 ## Installation
 
