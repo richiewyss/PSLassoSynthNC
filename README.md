@@ -9,18 +9,30 @@
 
 ## Background
 
-When fitting Lasso models for propensity score weighting, both theory
-and simulations have shown that undersmoothing the Lasso model is
-beneficial for reducing bias in estimated treatment effects. However,
-determining the degree of undersmoothing can be challenging. Proper
-undersmoothing can reduce bias in estimated effects, but excessive
-undersmoothing can increase the risk of bias caused by severe
-overfitting. This package uses balance diagnostics to determine the
-degree of undresmoothing when fitting Lasso models for propensity score
-weighting. However, tuning Lasso models using balance metrics are not
-guaranteed to minimize bias in PS weighted estimators since such metrics
-are outcome blind. Therefore, this package further provides functions to
-generate synthetic negative control exposures for bias detection.
+The least absolute shrinkage and selection operator (LASSO) has become
+the most widely used tool for fitting large-scale propensity score (PS)
+models. LASSO uses $L_1$ regularized regression to prevent overfitting
+by shrinking coefficients toward zero (setting some exactly to zero).
+The degree of regularization is typically selected using
+cross-validation to minimize out-of-sample prediction error. Both theory
+and simulations have shown, however, that when using LASSO models for PS
+weighting, less regularization is needed to minimize bias in PS weighted
+estimators. This is referred to as undersmoothing the LASSO model, where
+the optimal degree of undersmoothing can be derived from the target
+causal parameter’s efficient influence function. In many settings,
+however, the efficient influence function is unknown or difficult to
+derive.
+
+In recent work by Wyss et al. (2025), the authors consider the use of
+balance metrics as a simple and generally applicable approach to select
+the degree of undersmoothing when the efficient influence function is
+unknown. Because LASSO models that are tuned using balance metrics alone
+are not assured to minimize bias in PS weighted estimators—as such
+metrics are blind to the efficient influence function—Wyss et al further
+propose a framework to generate synthetic negative control exposures for
+bias detection. This package provides R code that uses balance criteria
+to undersmooth LASSO PS-weighted estimators, and the use of synthetic
+negative control exposures for bias detection.
 
 This package is based on work in the following paper:
 
