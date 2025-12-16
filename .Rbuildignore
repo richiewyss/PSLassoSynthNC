@@ -2,3 +2,8 @@
 ^\.Rproj\.user$
 ^LICENSE\.md$
 ^README\.Rmd$
+
+#Temporary files for helping with building/testing
+temp
+^LICENSE\.md$
+^README\.Rmd$

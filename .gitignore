@@ -1,3 +1,6 @@
+# Temporary files building/testing
+/temp
+
 # History files
 .Rhistory
 .Rapp.history
