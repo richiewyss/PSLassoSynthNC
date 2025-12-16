@@ -75,7 +75,9 @@ generating synthetic negative control cohorts.
 
 A brief description of each R file in the package is provided below. A
 more detailed description for each function (including a description of
-input parameters) is provided in separate vignettes.
+input parameters) is provided in by rendering documentation for the
+specific function through the help function in R (i.e.,
+*help(name_of_function)*).
 
 - **treatment_model.R**:
   - contains a function called *treatment_model()* that calls glmnet to

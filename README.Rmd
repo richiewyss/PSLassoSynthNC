@@ -53,7 +53,7 @@ The package further provides diagnostics for evaluating model performance. In ad
 
 ## Overview of Files in R Folder
 
-A brief description of each R file in the package is provided below. A more detailed description for each function (including a description of input parameters) is provided in separate vignettes.
+A brief description of each R file in the package is provided below. A more detailed description for each function (including a description of input parameters) is provided in by rendering documentation for the specific function through the help function in R (i.e., *help(name_of_function)*).
 
 * __treatment_model.R__: 
   + contains a function called *treatment_model()* that calls glmnet to fit several Lasso models for treatment assignment with varying degrees of undersmoothing and returns a dataframe of the out-of-fold predictions for each fitted lasso model. 
